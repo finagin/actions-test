@@ -1,5 +1,15 @@
 name: Test Laravel Github action
-on: [ workflow_dispatch ]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - develop
+      - feature/**
+  pull_request:
+    branches:
+      - master
+      - develop
 
 jobs:
   laravel-tests:
