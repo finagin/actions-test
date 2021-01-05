@@ -3,7 +3,7 @@ version: '3'
 services:
     laravel.test:
         build:
-            context: ./vendor/laravel/sail/runtimes/8.0
+            context: ./docker/8.0
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
@@ -18,17 +18,31 @@ services:
         networks:
             - sail
         depends_on:
-            - mysql
+            - pgsql
+            # - mysql
             - redis
             # - selenium
-    # selenium:
-    #     image: 'selenium/standalone-chrome'
-    #     volumes:
-    #         - '/dev/shm:/dev/shm'
-    #     networks:
-    #         - sail
-    #     depends_on:
-    #         - laravel.test
+    selenium:
+        image: 'selenium/standalone-chrome'
+        volumes:
+            - '/dev/shm:/dev/shm'
+        networks:
+            - sail
+        depends_on:
+            - laravel.test
+    pgsql:
+        image: postgres:12
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            PGPASSWORD: '${DB_PASSWORD}'
+            POSTGRES_DATABASE: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+        volumes:
+            - 'sailpostgresql:/var/lib/postgresql/data'
+        networks:
+            - sail
     mysql:
         image: 'mysql:8.0'
         ports:
@@ -68,6 +82,8 @@ networks:
     sail:
         driver: bridge
 volumes:
+    sailpostgresql:
+        driver: local
     sailmysql:
         driver: local
     sailredis:
